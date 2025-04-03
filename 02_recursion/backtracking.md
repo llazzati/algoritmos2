@@ -84,6 +84,7 @@ def recorrer(camino_previo: list[Posicion]) -> tuple[bool, list[Posicion]]:
         salida_encontrada = False
         solucion = camino_previo
         direcciones = ['N', 'S', 'O', 'E']
+        random.shuffle(direcciones)  # ¡Orden aleatorio!
         while direcciones and not salida_encontrada:
             nueva_posicion = avanzar(posicion_actual, direcciones.pop())
             if hay_paso(nueva_posicion) and nueva_posicion not in camino_previo:
