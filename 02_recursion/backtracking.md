@@ -34,14 +34,14 @@ Si bien cada problema tendrá una resolución diferente, podemos generalizar alg
 
 2. **Solución parcial y la solución final**: Debemos definir la generación de **soluciones parciales** que iremos construyendo paso a paso hasta llegar a una **solución válida**. También es importante identificar cuándo hemos alcanzado una **solución final** que cumple con todas las condiciones del problema.
 
-3. **Exploración exhaustiva**: Probamos todas las opciones posibles para construir la solución mediante llamadas recursivas que nos permiten **explorar diferentes ramas del árbol de soluciones**. Cada rama del árbol representa una solución posible que se construye mientras cumpla las restricciones o condiciones necesarias.
+3. **Exploración exhaustiva**: Probamos todas las opciones posibles para construir la solución mediante llamadas recursivas que nos permiten **explorar diferentes ramas de un árbol de soluciones**. Cada rama del árbol representa una solución posible que se construye mientras cumpla las restricciones o condiciones necesarias.
 
 4. **Rechazo y retroceso**: Si llegamos a un punto donde no podemos seguir avanzando sin violar alguna restricción, **se descarta esa solución parcial y debemos retroceder** (_backtrack_) para probar una opción diferente. Esto implica deshacer los cambios realizados en la solución parcial y volver a un estado anterior para explorar otra rama.
 
 ## Recorriendo un laberinto
-Analicemos en cómo podríamos plantear una estrategia para recorrer y salir exitosamente de un laberinto. Asumimos que este laberinto tiene una única entrada y una única salida para facilitar el problema. Una idea muy simple, pero a la vez poderosa puede ser la siguiente:
+Analicemos en cómo podríamos plantear una estrategia para recorrer y salir exitosamente de un laberinto. Asumimos que este laberinto tiene una única entrada y dos posibles salidas. Una idea muy simple, pero a la vez poderosa puede ser la siguiente:
 
-1. Avanzar en una dirección determinada (norte, sur, este, oeste).
+1. Avanzar en una dirección determinada (norte, sur, este, oeste) elegida al azar.
 2. En cada bifurcación, recorrer todos los caminos posibles.
 3. Si llegué a un final sin salida o un lugar ya visitado, vuelvo hacia atrás a probar otro camino.
 
@@ -51,27 +51,11 @@ Veamos una representación sencilla del problema.
 
 ![laberinto](./imagenes/laberintoNuevo.PNG)
 
-Entonces, cada posición dentro del laberinto puede ser **una bifurcación si permite avanzar en más de una dirección**.
-
-### El árbol de soluciones
-En el paso 2 mencionado debemos establecer una estrategia para construir las soluciones parciales, es decir, cómo recorreremos todos los caminos posibles en cada bifurcación. Una forma sería elegir una opción de manera aleatoria, otra más simple sería determinar el orden con el cual elegimos avanzar. Optando por la segunda estrategia, vamos a establecer el orden de búsqueda así:
-
-1. Ir al este (hacia la derecha en la imagen)
-2. Ir al oeste (hacia la izquierda en la imagen)
-3. Ir al sur (hacia abajo en la imagen)
-4. Ir al norte (hacia arriba en la imagen)
-
 Quien ingrese al laberinto deberá probar en cada posición diferentes caminos en el orden de búsqueda que planteamos en la estrategia. Una forma de representar **todas estas opciones que probará** es mediante un **árbol de soluciones** donde cada nodo representa la posición en el laberinto y cada rama un recorrido posible. Veamos cómo quedaría el árbol mencionado.
-
-![arbol soluciones laberinto](./imagenes/laberinto_arbol_soluciones.png)
-
-Partiendo desde la posición 1, primero decidimos avanzar a la posición 2 porque nuestro orden de búsqueda primero es ir a la derecha, dejando pendiente la posición 5 para una eventual exploración posterior. En sucesivas posiciones, realizamos la misma decisión hasta llegar a una posición sin salida (posición 8). Aquí debemos regresar nuestros pasos (backtrack) hasta donde teníamos más opciones disponibles, lo que nos lleva a la posición 3 para continuar explorando. Si bien el segundo paso del orden de búsqueda indica ir a la izquierda, elegimos avanzar hacia abajo a la posición 7 porque estamos probando todas las posibilidades a partir de la posición 3 y no queremos regresar aún a la posición 2 para probar otras. Este juego de prueba y error es lo que termina generando el árbol. Siguiendo la analogía con la recursión, veremos que **las hojas de este árbol son los casos base**.
 
 ### Implementando la solución
 
 Un estilo de implementación de este tipo de soluciones requiere mantener presente en cada instancia de recursión **una copia de la solución parcial** para construir a partir de esta las siguientes posibles soluciones. Es importante la idea de la copia parcial, que sería el **camino recorrido hasta el momento**, porque al probar diferentes opciones recursivas es necesario evitar que dichas pruebas alteren esta solución parcial de la que partimos. De lo contrario, el concepto de _vuelta atrás_ no sería posible. En el caso del laberinto, sería similar a marcar el camino recorrido de forma que otro pueda seguirlo.
-
-Siguiendo la imagen del árbol previa, imaginemos que comenzamos caminando las posiciones 1, 2 y 3. Al llegar a la posición 3, tenemos la posibilidad de ir a la posición 4 o 7. Cuando avanzamos a la posición 4, debemos _recordar_ que en la posición 3 aún nos queda pendiente visitar la posición 7. Entonces, cuando regresamos a la posición 3 porque el camino que llevaba por la 4 no tenía salida, debemos continuar pero contemplando que el camino parcial es 1-2-3. Esa es la **copia de solución parcial** a la que hacemos referencia, porque al visitar la posición 7 la solución parcial se compone de la previa agregando el 7, dando el camino 1-2-3-7.
 
 Veamos una idea para implementar un algoritmo que encuentre un camino que lleve a la salida, una solución válida.
 
@@ -102,16 +86,46 @@ La precondición de esta función es que recibe como `camino_previo` una lista s
 
 El **caso base** es claro, si estamos parados en la salida hemos encontrado una **solución válida** y la retornamos. El detalle del retorno es que también anunciamos que encontramos la salida con un `bool`, de forma que retornamos una tupla donde el primer elemento es el indicador que encontramos una solución válida y el segundo elemento es justamente la solución (el camino recorrido).
 
-El caso recursivo realiza lo siguiente:
-1. Asume que aún no encontramos la salida.
-2. Planteamos la estrategia de búsqueda con las 4 direcciones posibles.
-3. Para cada dirección probamos avanzar si tenemos paso por esa dirección y validando que no estemos regresando por donde vinimos:
-    - si no podemos avanzar, se descarta esa dirección.
-    - si avanzamos copiamos el `camino_previo` como `camino_actual`, le agregamos la posición actual al final y continuamos el recorrido utilizando `camino_actual`.
+El **caso recursivo** realiza lo siguiente:
+1.Asume que aún no se encontró la salida.
+
+3. En la posición actual (posicion_actual), el algoritmo:
+
+a. *Crea una nueva lista* con las 4 direcciones posibles: ['N', 'S', 'O', 'E'].
+
+b. *Desordena esa lista* con **random.shuffle** para que el orden en que se prueban los movimientos sea aleatorio y distinto en cada ejecución.
+
+c. *Recorre* cada dirección desordenada una por una, mientras no haya encontrado aún la salida.
+
+3. Para cada dirección:
+
+a. Calcula la **nueva posición** con avanzar(...).
+
+b. Verifica si:
+
+- Es un **paso válido** (hay_paso(...))
+
+- Si **no se puede avanzar** por esa dirección, la **descarta**.
+
+c. Si **se puede**  avanzar:
+
+- Crea una **copia** del **camino actual** (camino_actual).
+
+- **Agrega** la **nueva posición** al final.
+
+- Llama **recursivamente** a **recorrer(camino_actual)** para continuar desde allí.
+
+4. Si la función recursiva devuelve que **encontró salida**, **termina** y devuelve la solución.
 
 Es importante notar que en el caso recursivo recibimos el retorno del recorrido futuro porque necesitamos saber si por allí se encontró una salida. Esta información llega como el primer elemento de la tupla retornada. Es por eso que se utiliza como condición de corte del `while` la variable `salida_encontrada` que se inicializa en `False` para cada instancia recursiva.
 
-Si bien con este algoritmo podemos encontrar la primera solución válida, también podríamos pensar otro para que nos genere todos los recorridos posibles con salida, es decir, todas las soluciones válidas (si existen más de una). La estrategia para resolverlo sería la misma, intentando diferentes direcciones en cada posición mientras construimos caminos parciales que iremos descartando si no llevan a ningún lado. Y al llegar a la salida guardaríamos ese camino encontrado y volveríamos a probar otros que hayan quedado pendiente para ver si llegamos a salir utilizando otro recorrido.
+Caminos posibles desde la celda 1:
+
+a. **Opción 1**: salida por la celda 16:
+    **1 → 2 → 3 →  7 → 11 → 10 → 14 → 15 → 16**
+
+b. **Opción 2**: salida por la celda 13: 
+    **1 → 2 → 3 →  7 → 11 → 10  → 9  →  13**
 
 ### Ejercicio: Permutaciones
 Definir la función permutaciones, que dada una lista de enteros, retorne una lista de listas de enteros, donde cada lista es cada una de las posibles permutaciones de la lista original.
