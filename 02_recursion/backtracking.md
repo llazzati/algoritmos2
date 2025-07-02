@@ -87,9 +87,10 @@ La precondición de esta función es que recibe como `camino_previo` una lista s
 El **caso base** es claro, si estamos parados en la salida hemos encontrado una **solución válida** y la retornamos. El detalle del retorno es que también anunciamos que encontramos la salida con un `bool`, de forma que retornamos una tupla donde el primer elemento es el indicador que encontramos una solución válida y el segundo elemento es justamente la solución (el camino recorrido).
 
 El **caso recursivo** realiza lo siguiente:
+
 1.Asume que aún no se encontró la salida.
 
-3. En la posición actual (posicion_actual), el algoritmo:
+2. En la posición actual (posicion_actual), el algoritmo:
 
 a. *Crea una nueva lista* con las 4 direcciones posibles: ['N', 'S', 'O', 'E'].
 
