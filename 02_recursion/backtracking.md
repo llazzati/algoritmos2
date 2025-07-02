@@ -49,7 +49,7 @@ En este problema claramente no conocemos un curso de acción determinado para re
 
 Veamos una representación sencilla del problema.
 
-![laberinto](./imagenes/laberintoNuevo.png)
+![laberinto](./imagenes/laberintoNuevo.PNG)
 
 Entonces, cada posición dentro del laberinto puede ser **una bifurcación si permite avanzar en más de una dirección**.
 
