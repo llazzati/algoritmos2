@@ -61,21 +61,27 @@ Veamos una idea para implementar un algoritmo que encuentre un camino que lleve 
 
 ```python
 def recorrer(camino_previo: list[Posicion]) -> tuple[bool, list[Posicion]]:
+    # Obtenemos la última posición del camino recorrido hasta ahora; es la casilla actual donde se encuentra el "personaje".
     posicion_actual = camino_previo[-1]
     if es_salida(posicion_actual):
         return True, camino_previo
     else:
-        salida_encontrada = False
-        solucion = camino_previo
-        direcciones = ['N', 'S', 'O', 'E']
-        random.shuffle(direcciones)  # ¡Orden aleatorio!
+        salida_encontrada = False  # Empezamos asumiendo que aún no hay salida.
+        solucion = camino_previo   # Por ahora, la solución parcial es el camino actual.
+        # Creamos una lista con las 4 direcciones posibles en el laberinto:
+              direcciones = ['N', 'S', 'O', 'E']
+        # Mezclamos el orden de las direcciones al azar. Esto hace que el camino seguido cambie en cada ejecución del programa.
+        random.shuffle(direcciones)
         while direcciones and not salida_encontrada:
+            # Tomamos la última dirección de la lista y calculamos a qué nueva casilla llegaríamos si avanzamos en esa dirección.
             nueva_posicion = avanzar(posicion_actual, direcciones.pop())
+            # Verificamos dos cosas:
+            # 1) Que se pueda pasar a esa nueva posición (no hay una pared o límite).
+            # 2) Que no hayamos estado ya en esa casilla (para evitar ciclos).
             if hay_paso(nueva_posicion) and nueva_posicion not in camino_previo:
-                camino_actual = camino_previo.copy()
+                 camino_actual = camino_previo.copy()
                 camino_actual.append(nueva_posicion)
                 salida_encontrada, solucion = recorrer(camino_actual)
-            
         return salida_encontrada, solucion
 ```
 
@@ -88,7 +94,7 @@ El **caso base** es claro, si estamos parados en la salida hemos encontrado una 
 
 El **caso recursivo** realiza lo siguiente:
 
-1.Asume que aún no se encontró la salida.
+1. Asume que aún no se encontró la salida.
 
 2. En la posición actual (posicion_actual), el algoritmo:
 
